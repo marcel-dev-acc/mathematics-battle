@@ -1,0 +1,76 @@
+version: '3.7'
+
+services:
+  api:
+    build: 
+      context: ./api/app
+      dockerfile: Dockerfile.prod
+    command: gunicorn math_battle.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+    #   - ./api/app/:/usr/src/app/
+      - static_volume_1:/home/app/web/staticfiles
+      - media_volume_1:/home/app/web/mediafiles
+    # ports:
+    #   - 3011:8000
+    expose:
+    - 8000
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+
+  nginx_api:
+    build: ./api/nginx
+    volumes:
+      - static_volume_1:/home/app/web/staticfiles
+      - media_volume_1:/home/app/web/mediafiles
+    ports:
+      - 1350:80
+    depends_on:
+      - api
+
+  ui:
+    build: 
+      context: ./ui/app
+      dockerfile: Dockerfile.prod
+    command: gunicorn math_battle.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+    #   - ./api/app/:/usr/src/app/
+      - static_volume_2:/home/app/web/staticfiles
+      - media_volume_2:/home/app/web/mediafiles
+    # ports:
+    #   - 3011:8000
+    expose:
+    - 8000
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+
+  nginx_ui:
+    build: ./api/nginx
+    volumes:
+      - static_volume_2:/home/app/web/staticfiles
+      - media_volume_2:/home/app/web/mediafiles
+    ports:
+      - 1340:80
+    depends_on:
+      - api
+
+  db:
+    image: postgres:12.6-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    # environment:
+    #   - POSTGRES_USER=django_user
+    #   - POSTGRES_PASSWORD=django_password
+    #   - POSTGRES_DB=django_db
+    env_file:
+      - ./.env.prod.db
+
+volumes:
+  postgres_data:
+  static_volume_1:
+  media_volume_1:
+  static_volume_2:
+  media_volume_2:
