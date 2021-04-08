@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row px-5">
+    <div class="col my-3">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2>Player 1: <span id="player-2-username"></span></h2>
+                <p>Score: <span id="player-2-score">0</span></p>
+                <p>Question:</p>
+                <p id="player-2-current-question" class="fst-italic">Question will appear here</p>
+                <div>
+                    <input class="form-control" type="number" placeholder="Answer here"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col my-3">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2>Player 2: <span id="player-2-username"></span></h2>
+                <p>Score: <span id="player-2-score">0</span></p>
+                <p>Question:</p>
+                <p id="player-2-current-question" class="fst-italic">Question will appear here</p>
+                <div>
+                    <input class="form-control" type="number" placeholder="Answer here"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+{% endblock %}

@@ -15,6 +15,10 @@ to download the appropriate version fro you computer)
 * This can be achieved by running `chmod +x "path_to_file/file"`
 5) Run: `./start_deploy_prod.sh`
 
+## Creating new applications in Django
+docker-compose exec api python manage.py startapp <application name>
+docker-compose exec ui python manage.py startapp <application name>
+
 ## Development end-points
 http://localhost:3011/upload
 http://localhost:3011/admin
@@ -33,4 +37,7 @@ the following technologies:
 3) Postgres
 4) Gunicorn
 5) Nginx
+
+It is recommended that the .env* files are added to the .gitignore as shown in the initial commit.
+For the purposes of this project they have been left in as a point of reference.
 

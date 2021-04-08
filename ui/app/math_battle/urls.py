@@ -20,10 +20,14 @@ from django.conf.urls.static import static
 
 from upload.views import image_upload
 
+from www import views
+
 urlpatterns = [
+    path("", views.index, name="index"),
+    path("game/", views.game, name="game"),
     path("upload/", image_upload, name="upload"),
-    path('admin/', admin.site.urls),
 ]
 
 if bool(settings.DEBUG):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns.append(path('admin/', admin.site.urls))

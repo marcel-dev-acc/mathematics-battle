@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+    </div>
+    <div class="col">
+        <div class="my-2">
+            <button onclick="test();" class="btn btn-success">Create New Session</button>
+        </div>
+        <div class="card shadow">
+            <div class="card-body text-center">
+                <h1>Active Sessions</h1>
+                <div id="sessions-list">
+                    <p class="my-3 fst-italic">No active sessions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+    </div>
+</div>
+    
+{% endblock %}
