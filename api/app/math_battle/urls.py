@@ -18,12 +18,20 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
+from api import views
+
 from upload.views import image_upload
 
 urlpatterns = [
-    path("upload/", image_upload, name="upload"),
-    path('admin/', admin.site.urls),
+    path("api/status", views.api_status, name="status"),
+    path("api/create_session", views.create_session, name="create_session"),
+    path("api/sessions", views.get_sessions, name="get_sessions"),
+    path("api/session/<str:session_id>/user", views.add_user_to_session, name="add_user_to_session"),
+    path("api/session/<str:session_id>/user/<int:user_id>", views.get_new_problem, name="get_new_problem"),
+    path("api/session/<str:session_id>/user/<int:user_id>", views.submit_problem_solution, name="submit_problem_solution"),
 ]
 
 if bool(settings.DEBUG):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns.append(path("upload/", image_upload, name="upload"))
+    urlpatterns.append(path('admin/', admin.site.urls))

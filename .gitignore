@@ -3,3 +3,4 @@
 /api/app/env/*
 /ui/app/env/*
 .env*
+*.log
