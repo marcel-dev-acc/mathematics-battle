@@ -5,6 +5,7 @@ import traceback
 from datetime import datetime
 import json
 import uuid
+import random
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import User
@@ -52,7 +53,8 @@ def create_session(request) -> JsonResponse:
             session_id = uuid.uuid4()
             session = Session(
                 uuid=session_id,
-            ).save()
+            )
+            session.save()
             response = {
                 'status': 'ok',
                 'message': 'Request successful',
@@ -117,14 +119,11 @@ def get_sessions(request) -> JsonResponse:
         return JsonResponse(response, status=500)
 
 @csrf_exempt
-def add_user_to_session(request, session_id) -> JsonResponse:
+def add_user_to_session(request, session_id=None) -> JsonResponse:
     """Method to add a user to a session."""
     try:
         print(request.method)
         if request.method == 'PUT':
-            # request_payload = json.loads(
-            #     request.body.decode('latin1')
-            # )
             request_payload = json.loads(
                 request.body.decode('latin1')
             )
@@ -148,7 +147,8 @@ def add_user_to_session(request, session_id) -> JsonResponse:
             added_user = User(
                 username=username,
                 session=session
-            ).save()
+            )
+            added_user.save()
 
             response = {
                 'status': 'ok',
@@ -176,13 +176,52 @@ def add_user_to_session(request, session_id) -> JsonResponse:
         return JsonResponse(response, status=500)
 
 
-def get_new_problem(request) -> JsonResponse:
+def get_new_problem(request, session_id=None, username=None) -> JsonResponse:
     """Method to get a new problem to solve."""
     try:
         if request.method == 'GET':
+            session = Session.objects.filter(uuid=session_id).first()
+            if not session:
+                response = {
+                    'status': 'error',
+                    'message': 'Session not found'
+                }
+                return JsonResponse(response, status=404)
+
+            user = User.objects.filter(username=username).first()
+            if not user:
+                response = {
+                    'status': 'error',
+                    'message': 'User not found'
+                }
+                return JsonResponse(response, status=404)
+
+            number_1 = int(random.random() * 100)
+            number_2 = int(random.random() * 100)
+            list_of_operators = ['+', '-']
+            operator_index = int(random.random() * len(list_of_operators)) - 1
+            string_question = '{} {} {}'.format(
+                number_1,
+                list_of_operators[operator_index],
+                number_2
+            )
+            problem_solution = str(eval(string_question))
+            problem = Question(
+                question=string_question,
+                answer=problem_solution,
+                correct=False,
+                session=session,
+                user=user
+            )
+            problem.save()
+
             response = {
                 'status': 'ok',
-                'message': 'Request successful'
+                'message': 'Request successful',
+                'data': {
+                    'question_id': problem.id,
+                    'problem': string_question,
+                }
             }
             return JsonResponse(response, status=200)
         else:
@@ -207,10 +246,45 @@ def get_new_problem(request) -> JsonResponse:
 
 
 @csrf_exempt
-def submit_problem_solution(request) -> JsonResponse:
+def submit_problem_solution(request, session_id=None, username=None) -> JsonResponse:
     """Method to submit a solution to a problem."""   
     try:
         if request.method == 'POST':
+            request_payload = json.loads(
+                request.body.decode('latin1')
+            )
+
+            try:
+                problem_id = int(request_payload.get('problem_id'))
+            except ValueError as ex:
+                response = {
+                    'status': 'error',
+                    'message': 'Please provide a valid problem ID'
+                }
+                return JsonResponse(response, status=400)
+            if not problem_id:
+                response = {
+                    'status': 'error',
+                    'message': 'Please provide a problem ID'
+                }
+                return JsonResponse(response, status=400)
+
+            answer = str(request_payload.get('answer'))
+            if not answer:
+                response = {
+                    'status': 'error',
+                    'message': 'Please provide a solution'
+                }
+                return JsonResponse(response, status=400)
+
+            # TODO include validation for problem session.id
+            # TODO include validation for problem user.username
+
+            problem = Question.objects.filter(id=problem_id).first()
+            if problem.answer == answer:
+                problem.correct = True
+                problem.save()
+
             response = {
                 'status': 'ok',
                 'message': 'Request successful'
