@@ -6,7 +6,7 @@
     </div>
     <div class="col">
         <div class="my-2">
-            <button onclick="test();" class="btn btn-success">Create New Session</button>
+            <button onclick="index_page_test_api();" class="btn btn-success">Create New Session</button>
         </div>
         <div class="card shadow">
             <div class="card-body text-center">
@@ -20,5 +20,58 @@
     <div class="col">
     </div>
 </div>
+<script>
+    var BASE_URL = 'http://localhost:3011';
+
+    async function api_call(path, headers, method, payload) {
+        var url = BASE_URL+path;
+        var headings = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        };
+        for (var header in headers) {
+            if (headers[header]) {
+                headings[header] = headers[header];
+            }
+        }
+        var requestOptions = {
+            headers: headings,
+            method: method,
+            redirect: 'follow'
+        };
+        if (method != 'GET') {
+            requestOptions['body'] = JSON.stringify(payload);
+        }
+        var response = await fetch(url, requestOptions);
+        var json_response = await response.json();
+        return {
+            'status': response.status, 
+            'response': json_response
+        };
+    }
+
+    async function index_page_test_api() {
+        var path = ('/api/status');
+        var headers = {};
+        var method = 'GET';
+        var payload = {};
+        /* For simplifying page */
+        try {
+            /* Execute API */
+            var response = await api_call(
+                path, 
+                headers, 
+                method,
+                payload
+            );
+            if (response['status'] == 200) {
+            } else {}
+            console.log(response['status']);
+            console.log(response['response']);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+</script>
     
 {% endblock %}
