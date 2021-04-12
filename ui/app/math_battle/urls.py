@@ -24,7 +24,7 @@ from www import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("game/", views.game, name="game"),
+    path("game/<str:session_id>", views.game, name="game"),
     path("upload/", image_upload, name="upload"),
 ]
 

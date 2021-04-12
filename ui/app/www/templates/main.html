@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
+<div class="row px-3">
     <div class="col">
-    </div>
-    <div class="col">
-        <div class="my-2">
-            <button onclick="index_page_test_api();" class="btn btn-success">Create New Session</button>
+        <div class="my-2" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+            <button onclick="create_session();" class="btn btn-success">Create New Session</button>
         </div>
-        <div class="card shadow">
+        <div class="card shadow" style="max-width: 600px; margin-left: auto; margin-right: auto;">
             <div class="card-body text-center">
                 <h1>Active Sessions</h1>
                 <div id="sessions-list">
@@ -17,9 +15,8 @@
             </div>
         </div>
     </div>
-    <div class="col">
-    </div>
 </div>
+
 <script>
     var BASE_URL = 'http://localhost:3011';
 
@@ -50,8 +47,8 @@
         };
     }
 
-    async function index_page_test_api() {
-        var path = ('/api/status');
+    async function load_sessions() {
+        var path = ('/api/sessions');
         var headers = {};
         var method = 'GET';
         var payload = {};
@@ -65,9 +62,48 @@
                 payload
             );
             if (response['status'] == 200) {
+                var data = response['response']['data'];
+                if (data.length === 0) {
+                    return false;
+                }
+                document.getElementById('sessions-list').innerHTML = '';
+                for (var i = 0; i < data.length; i++) {
+                    html = `
+                    <p>
+                        <a href=/game/`+data[i]['session_id']+`>`+data[i]['session_id']+`</a>
+                    </p>    
+                    `;
+                    document.getElementById('sessions-list').innerHTML += html;
+                }
             } else {}
-            console.log(response['status']);
-            console.log(response['response']);
+            // console.log(response['status']);
+            // console.log(response['response']);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+    load_sessions();
+
+    async function create_session() {
+        var path = ('/api/create_session');
+        var headers = {};
+        var method = 'POST';
+        var payload = {};
+        /* For simplifying page */
+        try {
+            /* Execute API */
+            var response = await api_call(
+                path, 
+                headers, 
+                method,
+                payload
+            );
+            if (response['status'] == 200) {
+                var session_id = response['response']['data']['session_id'];
+                load_sessions();
+            } else {}
+            // console.log(response['status']);
+            // console.log(response['response']);
         } catch(e) {
             console.log(e);
         }

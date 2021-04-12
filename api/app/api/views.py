@@ -91,7 +91,34 @@ def get_sessions(request) -> JsonResponse:
             sessions_list = []
             sessions = Session.objects.all()
             for session in sessions:
-                sessions_list.append(session.uuid)
+                users = User.objects.filter(session=session)
+                players = []
+                i = 1
+                for user in users:
+                    score = 0
+                    questions = Question.objects.filter(session=session, user=user)
+                    latest_question = Question.objects.filter(session=session, user=user).order_by('-id').first()
+                    current_problem_id = None
+                    current_question = None
+                    if latest_question:
+                        current_problem_id = latest_question.id
+                        current_question = latest_question.question
+                    for question in questions:
+                        if question.correct:
+                            score += 1
+                    players.append({
+                        'player_number': i,
+                        'username': user.username,
+                        'score': score,
+                        'problem_id': current_problem_id,
+                        'question': current_question,
+                    })
+                    i += 1
+
+                sessions_list.append({
+                    'session_id': session.uuid,
+                    'players': players,
+                })
             response = {
                 'status': 'ok',
                 'message': 'Request successful',
@@ -269,7 +296,7 @@ def submit_problem_solution(request, session_id=None, username=None) -> JsonResp
                 }
                 return JsonResponse(response, status=400)
 
-            answer = str(request_payload.get('answer'))
+            answer = request_payload.get('answer')
             if not answer:
                 response = {
                     'status': 'error',
@@ -281,7 +308,7 @@ def submit_problem_solution(request, session_id=None, username=None) -> JsonResp
             # TODO include validation for problem user.username
 
             problem = Question.objects.filter(id=problem_id).first()
-            if problem.answer == answer:
+            if problem.answer == str(answer):
                 problem.correct = True
                 problem.save()
 

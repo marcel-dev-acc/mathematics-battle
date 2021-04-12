@@ -1,33 +1,301 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row px-5">
-    <div class="col my-3">
-        <div class="card shadow">
-            <div class="card-body">
-                <h2>Player 1: <span id="player-2-username"></span></h2>
-                <p>Score: <span id="player-2-score">0</span></p>
-                <p>Question:</p>
-                <p id="player-2-current-question" class="fst-italic">Question will appear here</p>
-                <div>
-                    <input class="form-control" type="number" placeholder="Answer here"/>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col my-3">
-        <div class="card shadow">
-            <div class="card-body">
-                <h2>Player 2: <span id="player-2-username"></span></h2>
-                <p>Score: <span id="player-2-score">0</span></p>
-                <p>Question:</p>
-                <p id="player-2-current-question" class="fst-italic">Question will appear here</p>
-                <div>
-                    <input class="form-control" type="number" placeholder="Answer here"/>
+
+<input id="session_id" type="text" value="{{ session_id }}" style="display: none;"/>
+<input id="username_player_1" type="text" value="" style="display: none;"/>
+<input id="username_player_2" type="text" value="" style="display: none;"/>
+
+<div id="add-user-card" style="display: none;">
+    <div class="row px-5">
+        <div class="col">
+            <div class="card shadow" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+                <div class="card-body text-center">
+                    <h1>Enter details</h1>
+                    <div class="row">
+                        <label class="col text-end">Username:</label>
+                        <div class="col">
+                            <input id="username" class="form-control" type="text" style="max-width: 200px;"/>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <label class="col text-end">Difficulty:</label>
+                        <div class="col">
+                            <select class="form-select" style="max-width: 200px;">
+                                <option selected value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button onclick="add_user_to_session();" class="btn btn-success">Submit</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<div id="questions-card" style="display: none;">
+    <div class="row px-5">
+        <div class="col my-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2>Player 1: <span id="player-1-username">waiting...</span></h2>
+                    <p>Score: <span id="player-1-score">0</span></p>
+                    <p class="mb-0">Question:</p>
+                    <input id="player-1-active-problem-number" type="number"/>
+                    <p id="player-1-current-question" class="fst-italic">Question will appear here</p>
+                    <div>
+                        <input id="player-1-answer" class="form-control" type="number" placeholder="Answer here"/>
+                    </div>
+                    <div id="start-problems-player-1" class="mt-2" style="display: none;">
+                        <button onclick="get_new_problem(1);" class="btn btn-success">Generate problem</button>
+                    </div>
+                    <div id="navigate-problems-player-1" class="mt-2" style="display: none;">
+                        <button onclick="submit_problem_solution(1);" class="btn btn-primary">Submit</button>
+                        <button onclick="get_new_problem(1);" class="btn btn-warning">Skip</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col my-3">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2>Player 2: <span id="player-2-username">waiting...</span></h2>
+                    <p>Score: <span id="player-2-score">0</span></p>
+                    <p class="mb-0">Question:</p>
+                    <input id="player-2-active-problem-number" type="number"/>
+                    <p id="player-2-current-question" class="fst-italic">Question will appear here</p>
+                    <div>
+                        <input id="player-2-answer" class="form-control" type="number" placeholder="Answer here"/>
+                    </div>
+                    <div id="start-problems-player-2" class="mt-2" style="display: none;">
+                        <button onclick="get_new_problem(2);" class="btn btn-success">Generate problem</button>
+                    </div>
+                    <div id="navigate-problems-player-2" class="mt-2" style="display: none;">
+                        <button onclick="submit_problem_solution(2);" class="btn btn-primary">Submit</button>
+                        <button onclick="get_new_problem(2);" class="btn btn-warning">Skip</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var BASE_URL = 'http://localhost:3011';
+
+    async function api_call(path, headers, method, payload) {
+        var url = BASE_URL+path;
+        var headings = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        };
+        for (var header in headers) {
+            if (headers[header]) {
+                headings[header] = headers[header];
+            }
+        }
+        var requestOptions = {
+            headers: headings,
+            method: method,
+            redirect: 'follow'
+        };
+        if (method != 'GET') {
+            requestOptions['body'] = JSON.stringify(payload);
+        }
+        var response = await fetch(url, requestOptions);
+        var json_response = await response.json();
+        return {
+            'status': response.status, 
+            'response': json_response
+        };
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function load_sessions() {
+        var session_id = document.getElementById('session_id').value;
+        var path = ('/api/sessions');
+        var headers = {};
+        var method = 'GET';
+        var payload = {};
+        /* For simplifying page */
+        try {
+            /* Execute API */
+            var response = await api_call(
+                path, 
+                headers, 
+                method,
+                payload
+            );
+            if (response['status'] == 200) {
+                var data = response['response']['data'];
+                for (var i = 0; i < data.length; i++) {
+                    var data_session_id = data[i]['session_id'];
+                    if (data_session_id == session_id) {
+                        var players = data[i]['players'];
+                        if (players.length < 2) {
+                            var username = document.getElementById('username').value;
+                            if (username == '') {
+                                document.getElementById('add-user-card').style.display = 'block';
+                            }
+                        } else {
+                            document.getElementById('questions-card').style.display = 'block';
+                        }
+                        for (var j = 0; j < players.length; j++) {
+                            if (players[j]['player_number'] == 1) {
+                                document.getElementById('username_player_1').value = players[j]['username'];
+                                document.getElementById('player-1-username').innerHTML = players[j]['username'];
+                                document.getElementById('player-1-score').innerHTML = players[j]['score'];
+                                document.getElementById('player-1-active-problem-number').value = players[j]['problem_id'];
+                                document.getElementById('player-1-current-question').innerHTML = players[j]['question'];
+                                var problem_id = document.getElementById('player-1-active-problem-number').value;
+                                if (problem_id == '') {
+                                    document.getElementById('start-problems-player-1').style.display = 'block';
+                                } else {
+                                    document.getElementById('navigate-problems-player-1').style.display = 'block';
+                                }
+                            }
+                            if (players[j]['player_number'] == 2) {
+                                document.getElementById('username_player_2').value = players[j]['username'];
+                                document.getElementById('player-2-username').innerHTML = players[j]['username'];
+                                document.getElementById('player-2-score').innerHTML = players[j]['score'];
+                                document.getElementById('player-2-active-problem-number').value = players[j]['problem_id'];
+                                document.getElementById('player-2-current-question').innerHTML = players[j]['question'];
+                                var problem_id = document.getElementById('player-2-active-problem-number').value;
+                                if (problem_id == '') {
+                                    document.getElementById('start-problems-player-2').style.display = 'block';
+                                } else {
+                                    document.getElementById('navigate-problems-player-2').style.display = 'block';
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {}
+            // console.log(response['status']);
+            console.log(response['response']);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+    async function run_forever_load_sessions(){
+        while (true) {
+            load_sessions();
+            await sleep(2000); // Every 5 seconds
+        }
+    }
+    run_forever_load_sessions();
+
+    async function add_user_to_session() {
+        var username = document.getElementById('username').value;
+        if (username == '') {
+            alert('Please enter a username');
+            return false;
+        }
+        var session_id = document.getElementById('session_id').value;
+        var path = ('/api/session/'+session_id+'/user');
+        var headers = {};
+        var method = 'PUT';
+        var payload = {
+            'username': username
+        };
+        /* For simplifying page */
+        try {
+            /* Execute API */
+            var response = await api_call(
+                path, 
+                headers, 
+                method,
+                payload
+            );
+            if (response['status'] == 200) {
+                load_sessions();
+                document.getElementById('add-user-card').style.display = 'none';
+                document.getElementById('questions-card').style.display = 'inline';
+            } else {}
+            console.log(response['status']);
+            console.log(response['response']);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+
+    async function get_new_problem(player_number) {
+        player_number = player_number.toString();
+        var username = document.getElementById('username_player_'+player_number).value;
+        if (username == '') {
+            alert('Player '+player_number+' does not exist, please refresh page');
+            return false;
+        }
+        var session_id = document.getElementById('session_id').value;
+        var path = ('/api/session/'+session_id+'/user/'+username+'/problem');
+        var headers = {};
+        var method = 'GET';
+        var payload = {};
+        /* For simplifying page */
+        try {
+            /* Execute API */
+            var response = await api_call(
+                path, 
+                headers, 
+                method,
+                payload
+            );
+            if (response['status'] == 200) {
+                document.getElementById('player-'+player_number+'-active-problem-number').value = response['response']['data']['question_id'];
+                load_sessions();
+            } else {}
+            // console.log(response['status']);
+            // console.log(response['response']);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+
+    async function submit_problem_solution(player_number) {
+        player_number = player_number.toString();
+        var username = document.getElementById('username_player_'+player_number).value;
+        if (username == '') {
+            alert('Player '+player_number+' does not exist, please refresh page');
+            return false;
+        }
+        var session_id = document.getElementById('session_id').value;
+        var problem_id = document.getElementById('player-'+player_number+'-active-problem-number').value;
+        var answer = document.getElementById('player-'+player_number+'-answer').value;
+        var path = ('/api/session/'+session_id+'/user/'+username+'/solution');
+        var headers = {};
+        var method = 'POST';
+        var payload = {
+            'problem_id': problem_id,
+            'answer': answer,
+        };
+        /* For simplifying page */
+        try {
+            /* Execute API */
+            var response = await api_call(
+                path, 
+                headers, 
+                method,
+                payload
+            );
+            if (response['status'] == 200) {
+                get_new_problem(player_number);
+            } else {
+                get_new_problem(player_number);
+            }
+            document.getElementById('player-'+player_number+'-answer').value = '';
+            // console.log(response['status']);
+            // console.log(response['response']);
+        } catch(e) {
+            console.log(e);
+        }
+    }
+</script>
     
 {% endblock %}

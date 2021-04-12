@@ -42,3 +42,8 @@ It is recommended that the line `.env*` is added to the .gitignore once you have
 For the purposes of this project they have been left in as a point of reference.
 
 Basic logging is included, this should be changed to logging via a url webhook (i.e. Slack)
+
+## User Story
+
+
+## API Documentation

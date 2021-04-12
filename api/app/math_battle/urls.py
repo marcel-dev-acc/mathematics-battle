@@ -25,7 +25,7 @@ from upload.views import image_upload
 urlpatterns = [
     path("api/status", views.api_status, name="status"),  # GET
     path("api/create_session", views.create_session, name="create_session"),  # POST
-    path("api/sessions/", views.get_sessions, name="get_sessions"),  # GET
+    path("api/sessions", views.get_sessions, name="get_sessions"),  # GET
     path("api/session/<str:session_id>/user", views.add_user_to_session, name="add_user_to_session"),  # PUT
     path("api/session/<str:session_id>/user/<str:username>/problem", views.get_new_problem, name="get_new_problem"),  # GET
     path("api/session/<str:session_id>/user/<str:username>/solution", views.submit_problem_solution, name="submit_problem_solution"),  # POST
