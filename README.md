@@ -22,6 +22,16 @@ to download the appropriate version fro you computer)
 - Development: `./start_deploy.sh`
 - Production: `./start_deploy_prod.sh`
 
+If there are any migration errors then please follow this logic:
+RUN
+1) `./start_deploy.sh`
+2) `./stop_deploy.sh`
+3) `./start_deploy_prod.sh`
+4) `./stop_deploy_prod.sh`
+5) `./start_deploy_prod.sh`
+
+It should now be working perfectly!
+
 It is recommended that the line `.env*` is added to the .gitignore once you have cloned this project.
 For the purposes of this project they have been left in as a point of reference.
 
