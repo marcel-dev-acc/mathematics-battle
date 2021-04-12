@@ -2,9 +2,9 @@
 
 {% block content %}
 
-<input id="session_id" type="text" value="{{ session_id }}" style="display: none;"/>
-<input id="username_player_1" type="text" value="" style="display: none;"/>
-<input id="username_player_2" type="text" value="" style="display: none;"/>
+<input id="session_id" type="text" value="{{ session_id }}"  style="display: none;"/> <!-- style="display: none;" -->
+<input id="username_player_1" type="text" value=""  style="display: none;"/>
+<input id="username_player_2" type="text" value=""  style="display: none;"/>
 
 <div id="add-user-card" style="display: none;">
     <div class="row px-5">
@@ -39,13 +39,13 @@
 
 <div id="questions-card" style="display: none;">
     <div class="row px-5">
-        <div class="col my-3">
+        <div id="player-1-box" class="col my-3">
             <div class="card shadow">
                 <div class="card-body">
                     <h2>Player 1: <span id="player-1-username">waiting...</span></h2>
                     <p>Score: <span id="player-1-score">0</span></p>
                     <p class="mb-0">Question:</p>
-                    <input id="player-1-active-problem-number" type="number"/>
+                    <input id="player-1-active-problem-number" type="number" style="display: none;"/>
                     <p id="player-1-current-question" class="fst-italic">Question will appear here</p>
                     <div>
                         <input id="player-1-answer" class="form-control" type="number" placeholder="Answer here"/>
@@ -60,13 +60,13 @@
                 </div>
             </div>
         </div>
-        <div class="col my-3">
+        <div id="player-2-box" class="col my-3">
             <div class="card shadow">
                 <div class="card-body">
                     <h2>Player 2: <span id="player-2-username">waiting...</span></h2>
                     <p>Score: <span id="player-2-score">0</span></p>
                     <p class="mb-0">Question:</p>
-                    <input id="player-2-active-problem-number" type="number"/>
+                    <input id="player-2-active-problem-number" type="number" style="display: none;"/>
                     <p id="player-2-current-question" class="fst-italic">Question will appear here</p>
                     <div>
                         <input id="player-2-answer" class="form-control" type="number" placeholder="Answer here"/>
@@ -85,6 +85,11 @@
 </div>
 
 <script>
+    if (window.innerWidth < 480) {
+        document.getElementById('player-1-box').className = 'my-3';
+        document.getElementById('player-2-box').className = 'my-3';
+    }
+
     var BASE_URL = 'http://localhost:3011';
 
     async function api_call(path, headers, method, payload) {
@@ -118,6 +123,58 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    function reveal_new_user_form() {
+        // Reveal relevant part of game
+        var input_username = document.getElementById('username').value;
+        var username_1 = document.getElementById('username_player_1').value;
+        var username_2 = document.getElementById('username_player_2').value;
+        if (input_username.length == 0) {
+            document.getElementById('add-user-card').style.display = 'block';
+        } else {
+            if (input_username == username_1) {
+                document.getElementById('add-user-card').style.display = 'none';
+                document.getElementById('questions-card').style.display = 'block';
+            }
+            if (input_username == username_2) {
+                document.getElementById('add-user-card').style.display = 'none';
+                document.getElementById('questions-card').style.display = 'block';
+            }
+        }
+        if (username_1.length > 0 && username_2.length > 0) {
+            document.getElementById('add-user-card').style.display = 'none';
+            document.getElementById('questions-card').style.display = 'block';
+        }
+    }
+
+    function reveal_user_buttons() {
+        // Reveal relevant buttons for question submission
+        var input_username = document.getElementById('username').value;
+        var username_1 = document.getElementById('username_player_1').value;
+        var username_2 = document.getElementById('username_player_2').value;
+        // Player 1
+        if (input_username.length > 0 && input_username == username_1) {
+            var problem_id_play_1 = document.getElementById('player-1-active-problem-number').value;
+            if (problem_id_play_1.length == 0) {
+                document.getElementById('start-problems-player-1').style.display = 'block';
+                document.getElementById('navigate-problems-player-1').style.display = 'none';
+            } else {
+                document.getElementById('start-problems-player-1').style.display = 'none';
+                document.getElementById('navigate-problems-player-1').style.display = 'block';
+            }
+        }
+        // Player 2
+        if (input_username.length > 0 && input_username == username_2) {
+            var problem_id_play_2 = document.getElementById('player-2-active-problem-number').value;
+            if (problem_id_play_2.length == 0) {
+                document.getElementById('start-problems-player-2').style.display = 'block';
+                document.getElementById('navigate-problems-player-2').style.display = 'none';
+            } else {
+                document.getElementById('start-problems-player-2').style.display = 'none';
+                document.getElementById('navigate-problems-player-2').style.display = 'block';
+            }
+        }
+    }
+
     async function load_sessions() {
         var session_id = document.getElementById('session_id').value;
         var path = ('/api/sessions');
@@ -138,40 +195,29 @@
                 for (var i = 0; i < data.length; i++) {
                     var data_session_id = data[i]['session_id'];
                     if (data_session_id == session_id) {
+                        // console.log(data[i]);
                         var players = data[i]['players'];
-                        if (players.length < 2) {
-                            var username = document.getElementById('username').value;
-                            if (username == '') {
-                                document.getElementById('add-user-card').style.display = 'block';
-                            }
-                        } else {
-                            document.getElementById('questions-card').style.display = 'block';
-                        }
                         for (var j = 0; j < players.length; j++) {
                             if (players[j]['player_number'] == 1) {
                                 document.getElementById('username_player_1').value = players[j]['username'];
                                 document.getElementById('player-1-username').innerHTML = players[j]['username'];
                                 document.getElementById('player-1-score').innerHTML = players[j]['score'];
-                                document.getElementById('player-1-active-problem-number').value = players[j]['problem_id'];
-                                document.getElementById('player-1-current-question').innerHTML = players[j]['question'];
-                                var problem_id = document.getElementById('player-1-active-problem-number').value;
-                                if (problem_id == '') {
-                                    document.getElementById('start-problems-player-1').style.display = 'block';
-                                } else {
-                                    document.getElementById('navigate-problems-player-1').style.display = 'block';
+                                if (players[j]['problem_id'] != null) {
+                                    document.getElementById('player-1-active-problem-number').value = players[j]['problem_id'];
+                                }
+                                if (players[j]['question'] != null) {
+                                    document.getElementById('player-1-current-question').innerHTML = players[j]['question'] + ' = ?';
                                 }
                             }
                             if (players[j]['player_number'] == 2) {
                                 document.getElementById('username_player_2').value = players[j]['username'];
                                 document.getElementById('player-2-username').innerHTML = players[j]['username'];
                                 document.getElementById('player-2-score').innerHTML = players[j]['score'];
-                                document.getElementById('player-2-active-problem-number').value = players[j]['problem_id'];
-                                document.getElementById('player-2-current-question').innerHTML = players[j]['question'];
-                                var problem_id = document.getElementById('player-2-active-problem-number').value;
-                                if (problem_id == '') {
-                                    document.getElementById('start-problems-player-2').style.display = 'block';
-                                } else {
-                                    document.getElementById('navigate-problems-player-2').style.display = 'block';
+                                if (players[j]['problem_id'] != null) {
+                                    document.getElementById('player-2-active-problem-number').value = players[j]['problem_id'];
+                                }
+                                if (players[j]['question'] != null) {
+                                    document.getElementById('player-2-current-question').innerHTML = players[j]['question'] + ' = ?';
                                 }
                             }
                         }
@@ -179,15 +225,19 @@
                 }
             } else {}
             // console.log(response['status']);
-            console.log(response['response']);
+            // console.log(response['response']);
         } catch(e) {
             console.log(e);
         }
+        reveal_new_user_form();
+        reveal_user_buttons();
     }
+    load_sessions();
     async function run_forever_load_sessions(){
         while (true) {
             load_sessions();
-            await sleep(2000); // Every 5 seconds
+            await sleep(2500); // Every 2.5 seconds
+            // await sleep(10000); // Every 10 seconds
         }
     }
     run_forever_load_sessions();
@@ -197,6 +247,13 @@
         if (username == '') {
             alert('Please enter a username');
             return false;
+        }
+        if (document.getElementById('username_player_1').value.length == 0) {
+            document.getElementById('username_player_1').value = username;
+        } else {
+            if (document.getElementById('username_player_2').value.length == 0) {
+                document.getElementById('username_player_2').value = username;
+            }
         }
         var session_id = document.getElementById('session_id').value;
         var path = ('/api/session/'+session_id+'/user');
@@ -219,8 +276,8 @@
                 document.getElementById('add-user-card').style.display = 'none';
                 document.getElementById('questions-card').style.display = 'inline';
             } else {}
-            console.log(response['status']);
-            console.log(response['response']);
+            // console.log(response['status']);
+            // console.log(response['response']);
         } catch(e) {
             console.log(e);
         }
@@ -228,13 +285,15 @@
 
     async function get_new_problem(player_number) {
         player_number = player_number.toString();
-        var username = document.getElementById('username_player_'+player_number).value;
-        if (username == '') {
+        var set_username = document.getElementById('username_player_'+player_number).value;
+        if (set_username.length == 0) {
             alert('Player '+player_number+' does not exist, please refresh page');
             return false;
         }
+        document.getElementById('start-problems-player-'+player_number).style.display = 'none';
+        document.getElementById('navigate-problems-player-'+player_number).style.display = 'block';
         var session_id = document.getElementById('session_id').value;
-        var path = ('/api/session/'+session_id+'/user/'+username+'/problem');
+        var path = ('/api/session/'+session_id+'/user/'+set_username+'/problem');
         var headers = {};
         var method = 'GET';
         var payload = {};
@@ -249,6 +308,7 @@
             );
             if (response['status'] == 200) {
                 document.getElementById('player-'+player_number+'-active-problem-number').value = response['response']['data']['question_id'];
+                document.getElementById('player-'+player_number+'-current-question').innerHTML = response['response']['data']['problem'] + ' = ?';
                 load_sessions();
             } else {}
             // console.log(response['status']);

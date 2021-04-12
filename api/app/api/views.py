@@ -215,7 +215,7 @@ def get_new_problem(request, session_id=None, username=None) -> JsonResponse:
                 }
                 return JsonResponse(response, status=404)
 
-            user = User.objects.filter(username=username).first()
+            user = User.objects.filter(username=username, session=session).first()
             if not user:
                 response = {
                     'status': 'error',
