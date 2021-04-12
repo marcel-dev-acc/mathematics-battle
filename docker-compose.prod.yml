@@ -48,14 +48,14 @@ services:
       - db
 
   nginx_ui:
-    build: ./api/nginx
+    build: ./ui/nginx
     volumes:
       - static_volume_2:/home/app/web/staticfiles
       - media_volume_2:/home/app/web/mediafiles
     ports:
       - 1340:80
     depends_on:
-      - api
+      - ui
 
   db:
     image: postgres:12.6-alpine
