@@ -1,4 +1,4 @@
-# mathematics-battle
+# Mathematics Battle
 ## Introduction
 This is a small application that allows two users to compete head to head 
 against each other in a mathematics challenge. Winner takes all! This project is
@@ -279,11 +279,11 @@ Opening another browser window will allow you to simulate a third user viewing t
 ## Nice-to-have
 This project would benefit from the following:
 
-###API
+### API
 1) Swagger API documentation
 2) Basic logging is included, this should be changed to logging via a url webhook (i.e. Slack)
 
-###UI
+### UI
 1) A progress bar that denotes the amount of time remaining until a winner is decided
 2) A time counter that defines how many seconds / minutes are left until the game ends
 3) A session management / user management page
