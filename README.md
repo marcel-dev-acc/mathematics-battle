@@ -4,10 +4,21 @@ This is a small application that allows two users to compete head to head
 against each other in a mathematics challenge. Winner takes all! This project is
 incomplete and would benefit from adding items in the "nice-to-have" section.
 
+## Requirements: Ubuntu 20.04
+1) Docker version 20.10.6, build 370c289 (you can use the docker engine install page [here](https://docs.docker.com/engine/install/ubuntu/)
+to download the appropriate version for you computer) & docker-compose version 1.29.0, build 07737305 (you can use the compose install page [here](https://docs.docker.com/compose/install/) to get the stable version of docker-compose)
+2) Clone this repository
+3) Navigate to the root of the directory
+4) Make sure the following files are executable:
+    - start_deploy.sh
+    - stop_deploy.sh
+    - start_deploy_prod.sh
+    - start_deploy_prod.sh
+* This can be achieved by running `chmod +x "path_to_file/file"`
 
-## Requirements
-1) Docker 3.1.0 (you can use the getting started page [here](https://docs.docker.com/get-started/)
-to download the appropriate version fro you computer)
+## Requirements: Mac OS
+1) Docker latest (you can use the getting started page [here](https://docs.docker.com/get-started/)
+to download the appropriate version for you computer)
 2) Clone this repository
 3) Navigate to the root of the directory
 4) Make sure the following files are executable:

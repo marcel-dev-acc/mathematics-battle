@@ -90,7 +90,7 @@
         document.getElementById('player-2-box').className = 'my-3';
     }
 
-    var BASE_URL = 'http://localhost:3011';
+    var BASE_URL = '{{ BASE_URL }}';
 
     async function api_call(path, headers, method, payload) {
         var url = BASE_URL+path;

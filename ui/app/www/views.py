@@ -1,10 +1,7 @@
 from django.shortcuts import render
-from math_battle.settings import DEBUG
+import os
 
-if DEBUG == 0:
-    BASE_URL = 'http://localhost:1350'
-else:
-    BASE_URL = 'http://localhost:3011'
+BASE_URL =os.environ.get("API_URL", default='http://localhost:3011')
 
 # Create your views here.
 def index(request):
