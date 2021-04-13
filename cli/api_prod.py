@@ -2,7 +2,7 @@ import requests
 import json
 import pytest
 
-BASE_URL = 'http://localhost:3011'
+BASE_URL = 'http://localhost:1350'
 
 def create_session():
     params = {}

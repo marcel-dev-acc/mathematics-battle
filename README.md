@@ -15,6 +15,8 @@ to download the appropriate version for you computer) & docker-compose version 1
     - start_deploy_prod.sh
     - start_deploy_prod.sh
 * This can be achieved by running `chmod +x "path_to_file/file"`
+5) Python installed with pip
+6) Add the following packages to python: `pip3 install requests` & `pip3 install pytest`
 
 ## Requirements: Mac OS
 1) Docker latest (you can use the getting started page [here](https://docs.docker.com/get-started/)
@@ -27,6 +29,8 @@ to download the appropriate version for you computer)
     - start_deploy_prod.sh
     - start_deploy_prod.sh
 * This can be achieved by running `chmod +x "path_to_file/file"`
+5) Python installed with pip
+6) Add the following packages to python: `pip3 install requests` & `pip3 install pytest`
 
 
 ## Launch
